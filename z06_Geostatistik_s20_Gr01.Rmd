@@ -83,18 +83,18 @@ library(raster)
 library(rgdal)
 Rljz <- raster(SPDFljz)
 
-extent(Rljz) <- extent(SPDFljz)
+extent(Rljz) <- c(490261, 493771, 3121075, 3125845)
 dim(Rljz) <- c(14, 14) #vllt andere Pixelsize?
 
 #Spatial Grid
-bb <- bbox(SPDFljz)
-cs <- c(14, 14) * 10500
-cc <- bb[,1] + (cs/2)
-cd <- ceiling(diff(t(bb))/cs)
-GT <- GridTopology(cellcentre.offset = cc, #c(490261, 3121075)
-                   cellsize = cs,          #c(14, 14)
-                   cells.dim = cd)         #c(1920, 1080)
-SpatialGrid(grid = GT, proj4string = coordRefSys)
+#bb <- bbox(SPDFljz)
+#cs <- c(14, 14) * 10500
+#cc <- bb[,1] + (cs/2)
+#cd <- ceiling(diff(t(bb))/cs)
+#GT <- GridTopology(cellcentre.offset = cc, #c(490261, 3121075)
+#                   cellsize = cs,          #c(14, 14)
+#                   cells.dim = cd)         #c(1920, 1080)
+#SPG <- SpatialGrid(data= SPDljz, grid = GT, proj4string = coordRefSys)
 
 vRljz <- rasterize(SPDFljz, Rljz, Ca)
 spplot(vRljz)            
