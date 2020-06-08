@@ -84,17 +84,15 @@ library(rgdal)
 Rljz <- raster(SPDFljz)
 
 extent(Rljz) <- c(490261, 493771, 3121075, 3125845)
-dim(Rljz) <- c(14, 14) #vllt andere Pixelsize?
+dim(Rljz) <- c(14, 14) 
 
 #Spatial Grid
-#bb <- bbox(SPDFljz)
-#cs <- c(14, 14) * 10500
-#cc <- bb[,1] + (cs/2)
-#cd <- ceiling(diff(t(bb))/cs)
-#GT <- GridTopology(cellcentre.offset = cc, #c(490261, 3121075)
-#                   cellsize = cs,          #c(14, 14)
-#                   cells.dim = cd)         #c(1920, 1080)
-#SPG <- SpatialGrid(data= SPDljz, grid = GT, proj4string = coordRefSys)
+GridTopology(cellcentre.offset = c(490261, 3121075),
+             cellsize = c(14, 14),
+             cells.dim = c(250, 340))
+getGridTopology(as(Rljz, "SpatialGrid"))
+str(Rljz)
+
 
 vRljz <- rasterize(SPDFljz, Rljz, Ca)
 spplot(vRljz)            
@@ -108,7 +106,7 @@ target_raster <- as(vRljz, "SpatialGridDataFrame")
 interpol_Ca <- gstat::krige(Ca ~ 1, 
                             SPDFljz, target_raster, 
                             model = vario_omni_Ca_fit)
-#summary(interpol_Ca)
+summary(interpol_Ca)
 #plot(raster(interpol_Ca))
 ```
 
@@ -118,7 +116,10 @@ Die krige-Funktion produziert zum einen var1.pred und zum anderen var1.var. var1
 
 d) Ermitteln Sie diejenigen Pixel in dem Vorhersagegrid der Zielgröße, für die die errechnete Kriging-Varianz den Wert der Gesamt-Varianz der Zielgröße überschreitet und definieren Sie diese als NoData. (1 Punkt)
 ```{r Aufgabe 13d}
-#is.na(interpol_Ca) <- interpol_Ca@data$var1.pred > 79.69
+var(Ca)
+#var1.var ist max. 109.1
+NoData <- interpol_Ca["var1.var" > 109.1]
+NoData <- NULL
 ```
 
 e) Plotten Sie sowohl die vorhergesagten Ca-Ionenkonzentrationen als auch die zugehörigen Kriging-Varianzen mit Hilfe der Methode spplot. Maskieren Sie in der Abbildung der Vorhersagewerte die in d) ausgeschlossenen Pixel. Beschriften Sie vernünftig und verändern Sie die Farbskalen beider Graphiken, sodass ein gefälliger Druck in schwarz/weiß möglich ist. (3 Punkte)
