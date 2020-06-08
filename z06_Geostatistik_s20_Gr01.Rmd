@@ -70,15 +70,7 @@ sqrt(10500000/335) * 0.0791
 
 #Anpassung der bounding box
 bbox(SPDFljz)
-#library(sf)
-#new_bb <- c(490261, 3121075, 493771, 3125845)
-#names(new_bb) <- c("xmin", "ymin", "xmax", "ymax")
-#attr(new_bb, "class") <- "bbox"
 
-#attr(SPDFljz, "bbox") <- new_bb
-#bbox(SPDFljz)
-
-#
 library(raster)
 library(rgdal)
 Rljz <- raster(SPDFljz)
@@ -126,13 +118,13 @@ e) Plotten Sie sowohl die vorhergesagten Ca-Ionenkonzentrationen als auch die zu
 Hinweis: Mit Hilfe des Befehls ??Palettes erfragen Sie diverse Methoden verschiedener Pakete zur Erstellung von Farbpaletten. Insbesondere das Paket „RColorBrewer“ könnte dabei in Verbindung mit der Website http://colorbrewer2.org/ von Interesse für Sie sein.
 ```{r Aufgabe 13 e}
 library(RColorBrewer)
-mycolor <- brewer.pal(n = 9, name = "Greys")
+mycolor <- colorRampPalette(brewer.pal(n=9, name = "Greys"))(20)
 library(sp)
 library(lattice)
 mylayout <- list(col.pixels = mycolor)
 spplot(interpol_Ca, "var1.pred",
        main = "Vorhergesagte Ca-Ionenkonzentration",
-       col.regions=brewer.pal(9, "Greys"))
+       col.regions=mycolor)
 
 spplot(interpol_Ca, "var1.var")
 
