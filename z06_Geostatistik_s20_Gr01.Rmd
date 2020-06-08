@@ -1,0 +1,132 @@
+---
+title: "Aufgabe 06"
+author: "Gruppe 01"
+date: "4 6 2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Laden Sie den Workspace yingtan_20_ueb3.Rdata sowie das Paket gstat und überführen Sie das Objekt ljz in ein SpatialPointsDataFrame. Reproduzieren Sie ihr Variogrammmodell aus der vorangegangenen Übung.
+```{r}
+library(tidyverse)
+load("data/yingtan_20_ueb3.RData")
+
+##SpatialPointsDataFrame##
+library(sp)
+#Spalten mit den Koordinaten selektieren
+spatialCoords <- dplyr::select(ljz, 
+                               long = EAST, 
+                               lat = NORTH)
+
+#Koordinatensystem definieren (s. txt-Datei Datenbeschreibung)
+coordRefSys <- CRS("+proj=utm +zone=50 +ellps=WGS84 +datum=WGS84")
+
+#SpatialPointsDataFrame erstellen
+SPDFljz <- SpatialPointsDataFrame(spatialCoords, 
+                                  ljz, 
+                                  proj4string = coordRefSys)
+
+##Reproduktion des Variogrammmodells##
+#omnidirektionales empirisches Variogramm
+library(gstat)
+Ca <- SPDFljz@data$Ca_exch
+
+vario_omni_Ca <- variogram(Ca ~ EAST + NORTH,
+                           data = SPDFljz,
+                           cutoff = 2202,
+                           width = 150)
+
+plot(vario_omni_Ca,
+     main = "Omnidirektionales empirisches Variogramm",
+     pch = 4,
+     col = "black")
+
+#Modell zum Variogramm
+vario_omni_Ca_fit <- fit.variogram(vario_omni_Ca, 
+                                   vgm(model = "Exp"))
+
+plot(vario_omni_Ca,
+     model = vario_omni_Ca_fit,
+     cutoff = 2202,
+     ylim = c(0, 175),
+     pch = 4,
+     col = "black",
+     main = "Variogrammmodell der austauschbaren Ca-Ionen")
+```
+
+## Aufgabe 13 Ordinary Kriging
+
+Ordinary Kriging (OK) ist das am häufigsten verwendete Kriging-Verfahren zur Interpolation punktueller Daten in die Fläche. Vom Prinzip her eine spezielle lineare Regressionstechnik, berücksichtigt es räumliche Strukturen durch die Integration der Variogramme in den Berechnungsprozess.
+
+a) Erstellen Sie ein reguläres Raster für die räumliche Interpolation. Entscheiden Sie sich für eine geeignete Pixelgröße und begründen Sie ihre Wahl. Erweitern Sie die bounding box des Objekts ljz in x-Richtung jeweils um 180m und nach Norden und Süden um je 215m, damit auch das komplette, 10.5 km² große, Untersuchungsgebiet erfasst wird. Um ihr Spatial- Grid zu erzeugen, nutzen Sie die Funktion GridTopology. (3 Punkte)
+
+HENGL, T. (2006): Finding the right pixel size. In: Computers & Geosciences, 32: 1283-1298. (Abschnitt 2.5: Grid resolution and point samples)
+```{r Aufgabe 13a}
+#Pixelsize nach Hengl 2006
+sqrt(10500/335) * 0.0791
+
+library(raster)
+library(rgdal)
+Rljz <- raster(SPDFljz)
+
+#Anpassung der bounding box
+bboxSPDFljz <- bbox(SPDFljz)
+
+extent(Rljz) <- extent(bbox(SPDFljz))
+dim(Rljz) <- c(44, 44) #vllt andere Pixelsize?
+
+#Spatial Grid
+GT <- GridTopology(cellcentre.offset = c(490441, 3121290),
+                   cellsize = c(44, 44),
+                   cells.dim = c(224, 259))
+SpatialGrid(grid = GT, proj4string = coordRefSys)
+
+vRljz <- rasterize(SPDFljz, Rljz, Ca)
+plot(vRljz)            
+```
+
+b) Wenden Sie die Methode krige entsprechend des Ordinary Kriging an und interpolieren Sie die Konzentration der Ca-Ionen auf die Rasterzellen des in Aufgabe a) erzeugten Objekts. Benutzen Sie ihr Variogrammmodell aus der vorangegangenen Übung und notieren Sie ihre R-Syntax im Protokoll. (1 Punkt)
+```{r Aufgabe 13b}
+#Ordinary Kriging
+library(krige)
+target_raster <- as(vRljz, "SpatialGridDataFrame")
+interpol_Ca <- gstat::krige(Ca ~ 1, 
+                            SPDFljz, target_raster, 
+                            model = vario_omni_Ca_fit)
+summary(interpol_Ca)
+plot(raster(interpol_Ca))
+```
+
+c) Welche zwei Daten-Attribute produziert die krige-Funktion und wofür stehen sie? (1 Punkt)
+
+Die krige-Funktion produziert zum einen var1.pred und zum anderen var1.var. var1.pred beinhaltet die Beschreibung der vorhergesagten Werte für die austauschbaren Ca-Ionen. var1.var beinhaltet die die (Co)varianzen für die berechneten Werte.
+
+d) Ermitteln Sie diejenigen Pixel in dem Vorhersagegrid der Zielgröße, für die die errechnete Kriging-Varianz den Wert der Gesamt-Varianz der Zielgröße überschreitet und definieren Sie diese als NoData. (1 Punkt)
+```{r Aufgabe 13d}
+#is.na(interpol_Ca) <- interpol_Ca@data$var1.pred > 79.69
+```
+
+e) Plotten Sie sowohl die vorhergesagten Ca-Ionenkonzentrationen als auch die zugehörigen Kriging-Varianzen mit Hilfe der Methode spplot. Maskieren Sie in der Abbildung der Vorhersagewerte die in d) ausgeschlossenen Pixel. Beschriften Sie vernünftig und verändern Sie die Farbskalen beider Graphiken, sodass ein gefälliger Druck in schwarz/weiß möglich ist. (3 Punkte)
+Hinweis: Mit Hilfe des Befehls ??Palettes erfragen Sie diverse Methoden verschiedener Pakete zur Erstellung von Farbpaletten. Insbesondere das Paket „RColorBrewer“ könnte dabei in Verbindung mit der Website http://colorbrewer2.org/ von Interesse für Sie sein.
+```{r Aufgabe 13 e}
+library(RColorBrewer)
+mycolor <- brewer.pal(n = 9, name = "Greys")
+library(sp)
+library(lattice)
+mylayout <- list(col.pixels = mycolor)
+spplot(interpol_Ca, "var1.pred",
+       main = "Vorhergesagte Ca-Ionenkonzentration",
+       col.regions=brewer.pal(9, "Greys"))
+
+spplot(interpol_Ca, "var1.var")
+
+```
+
+f) Interpretieren Sie kurz und knapp ihren Kriging-Varianz-Plot. Wieso ist
+die Kriging-Varianz als internes Gütemaß der Interpolation nur bedingt aussagekräftig?
+(1 Punkt)
+
+Die Aussagekraft hängt stark von der Pixelgröße und der Beprobungsdichte ab. Je dichter beprobt wurde, desto kleiner kann die Pixelgröße gewählt werden und desto genauer wird die Interpolation. Da es aber meist mehr Einflussfaktoren für einen bestimmten Messwert (hier die Konzentration von austauschbaren Ca-Ionen) als die räumliche Nähe gibt, ist die Interpolation nur auf Basis der Distanz nur eine Annäherung bzw. grobe Schätzung. In diesem Beispiel hat bereits das Variogramm gezeigt, dass nur Orte, die sehr nah beieinander liegen, ähnliche Werte/eine geringe Varianz der Werte aufweisen. Deshalb ist die Interpolation allein nicht aussagekräftig genug.
