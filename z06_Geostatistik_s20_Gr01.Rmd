@@ -66,26 +66,38 @@ a) Erstellen Sie ein reguläres Raster für die räumliche Interpolation. Entsch
 HENGL, T. (2006): Finding the right pixel size. In: Computers & Geosciences, 32: 1283-1298. (Abschnitt 2.5: Grid resolution and point samples)
 ```{r Aufgabe 13a}
 #Pixelsize nach Hengl 2006
-sqrt(10500/335) * 0.0791
+sqrt(10500000/335) * 0.0791
 
+#Anpassung der bounding box
+bbox(SPDFljz)
+#library(sf)
+#new_bb <- c(490261, 3121075, 493771, 3125845)
+#names(new_bb) <- c("xmin", "ymin", "xmax", "ymax")
+#attr(new_bb, "class") <- "bbox"
+
+#attr(SPDFljz, "bbox") <- new_bb
+#bbox(SPDFljz)
+
+#
 library(raster)
 library(rgdal)
 Rljz <- raster(SPDFljz)
 
-#Anpassung der bounding box
-bboxSPDFljz <- bbox(SPDFljz)
-
-extent(Rljz) <- extent(bbox(SPDFljz))
-dim(Rljz) <- c(44, 44) #vllt andere Pixelsize?
+extent(Rljz) <- extent(SPDFljz)
+dim(Rljz) <- c(14, 14) #vllt andere Pixelsize?
 
 #Spatial Grid
-GT <- GridTopology(cellcentre.offset = c(490441, 3121290),
-                   cellsize = c(44, 44),
-                   cells.dim = c(224, 259))
+bb <- bbox(SPDFljz)
+cs <- c(14, 14) * 10500
+cc <- bb[,1] + (cs/2)
+cd <- ceiling(diff(t(bb))/cs)
+GT <- GridTopology(cellcentre.offset = cc, #c(490261, 3121075)
+                   cellsize = cs,          #c(14, 14)
+                   cells.dim = cd)         #c(1920, 1080)
 SpatialGrid(grid = GT, proj4string = coordRefSys)
 
 vRljz <- rasterize(SPDFljz, Rljz, Ca)
-plot(vRljz)            
+spplot(vRljz)            
 ```
 
 b) Wenden Sie die Methode krige entsprechend des Ordinary Kriging an und interpolieren Sie die Konzentration der Ca-Ionen auf die Rasterzellen des in Aufgabe a) erzeugten Objekts. Benutzen Sie ihr Variogrammmodell aus der vorangegangenen Übung und notieren Sie ihre R-Syntax im Protokoll. (1 Punkt)
@@ -96,8 +108,8 @@ target_raster <- as(vRljz, "SpatialGridDataFrame")
 interpol_Ca <- gstat::krige(Ca ~ 1, 
                             SPDFljz, target_raster, 
                             model = vario_omni_Ca_fit)
-summary(interpol_Ca)
-plot(raster(interpol_Ca))
+#summary(interpol_Ca)
+#plot(raster(interpol_Ca))
 ```
 
 c) Welche zwei Daten-Attribute produziert die krige-Funktion und wofür stehen sie? (1 Punkt)
