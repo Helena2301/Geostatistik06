@@ -75,14 +75,14 @@ bb
 
 library(raster)
 library(rgdal)
-Rljz <- raster(SPDFljz)
+#Rljz <- raster(SPDFljz)
 
-extent(Rljz) <- c(490261, 493771, 3121075, 3125845)
+#extent(Rljz) <- c(490261, 493771, 3121075, 3125845)
 #extent(Rljz) <- extent(SPDFljz)
 
 #Pixelsize nach Hengl 2006
 sqrt(10500000/335) * 0.0791
-dim(Rljz) <- c(14, 14) 
+#dim(Rljz) <- c(14, 14) 
 
 #Spatial Grid
 GT <- GridTopology(cellcentre.offset = c(490261, 3121075),
@@ -92,12 +92,12 @@ targetSPG <- SpatialGrid(grid = GT,
                          proj4string = coordRefSys)
 
 
-getGridTopology(as(Rljz, "SpatialGrid"))
-str(Rljz)
+#getGridTopology(as(Rljz, "SpatialGrid"))
+#str(Rljz)
 
 
-vRljz <- rasterize(SPDFljz, Rljz, Ca)
-spplot(vRljz)            
+#vRljz <- rasterize(SPDFljz, Rljz, Ca)
+#spplot(vRljz)            
 ```
 
 b) Wenden Sie die Methode krige entsprechend des Ordinary Kriging an und interpolieren Sie die Konzentration der Ca-Ionen auf die Rasterzellen des in Aufgabe a) erzeugten Objekts. Benutzen Sie ihr Variogrammmodell aus der vorangegangenen Übung und notieren Sie ihre R-Syntax im Protokoll. (1 Punkt)
@@ -118,8 +118,12 @@ d) Ermitteln Sie diejenigen Pixel in dem Vorhersagegrid der Zielgröße, für di
 ```{r Aufgabe 13d}
 var(Ca)
 #var1.var ist max. 109.1
-NoData <- interpol_Ca["var1.var" > 109.1]
-NoData <- NULL
+#NoData <- interpol_Ca
+#NoData@data$var1.pred > 109.1 <- NA
+
+#NoData@data$var1.pred <- NA
+#NoData@data$var1.var <- NA
+#NoData <- NULL
 ```
 
 e) Plotten Sie sowohl die vorhergesagten Ca-Ionenkonzentrationen als auch die zugehörigen Kriging-Varianzen mit Hilfe der Methode spplot. Maskieren Sie in der Abbildung der Vorhersagewerte die in d) ausgeschlossenen Pixel. Beschriften Sie vernünftig und verändern Sie die Farbskalen beider Graphiken, sodass ein gefälliger Druck in schwarz/weiß möglich ist. (3 Punkte)
@@ -127,7 +131,11 @@ Hinweis: Mit Hilfe des Befehls ??Palettes erfragen Sie diverse Methoden verschie
 ```{r Aufgabe 13 e}
 library(RColorBrewer)
 mycolor <- colorRampPalette(brewer.pal(n=9, name = "Greys"))(20)
-library(sp)
+
+#
+#Rinterpol_Ca <- rasterize(SPDFljz, NoData, interpol_Ca,  mask = TRUE)
+#Rinterpol_Ca <- mask(NoData, interpol_Ca)
+#Darstellung
 library(lattice)
 mylayout <- list(col.pixels = mycolor)
 spplot(interpol_Ca, "var1.pred",
