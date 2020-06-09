@@ -75,29 +75,17 @@ bb
 
 library(raster)
 library(rgdal)
-#Rljz <- raster(SPDFljz)
-
-#extent(Rljz) <- c(490261, 493771, 3121075, 3125845)
-#extent(Rljz) <- extent(SPDFljz)
 
 #Pixelsize nach Hengl 2006
 sqrt(10500000/335) * 0.0791
-#dim(Rljz) <- c(14, 14) 
 
 #Spatial Grid
 GT <- GridTopology(cellcentre.offset = c(490261, 3121075),
              cellsize = c(14, 14),
              cells.dim = c(250, 340))
+
 targetSPG <- SpatialGrid(grid = GT,
                          proj4string = coordRefSys)
-
-
-#getGridTopology(as(Rljz, "SpatialGrid"))
-#str(Rljz)
-
-
-#vRljz <- rasterize(SPDFljz, Rljz, Ca)
-#spplot(vRljz)            
 ```
 
 b) Wenden Sie die Methode krige entsprechend des Ordinary Kriging an und interpolieren Sie die Konzentration der Ca-Ionen auf die Rasterzellen des in Aufgabe a) erzeugten Objekts. Benutzen Sie ihr Variogrammmodell aus der vorangegangenen Übung und notieren Sie ihre R-Syntax im Protokoll. (1 Punkt)
@@ -117,13 +105,11 @@ Die krige-Funktion produziert zum einen var1.pred und zum anderen var1.var. var1
 d) Ermitteln Sie diejenigen Pixel in dem Vorhersagegrid der Zielgröße, für die die errechnete Kriging-Varianz den Wert der Gesamt-Varianz der Zielgröße überschreitet und definieren Sie diese als NoData. (1 Punkt)
 ```{r Aufgabe 13d}
 var(Ca)
-#var1.var ist max. 109.1
-#NoData <- interpol_Ca
-#NoData@data$var1.pred > 109.1 <- NA
+#var1.var ist max. 127.13
 
-#NoData@data$var1.pred <- NA
-#NoData@data$var1.var <- NA
-#NoData <- NULL
+NoData <- interpol_Ca
+NoData[NoData$var1.var > 123.85] <- NA
+NoData
 ```
 
 e) Plotten Sie sowohl die vorhergesagten Ca-Ionenkonzentrationen als auch die zugehörigen Kriging-Varianzen mit Hilfe der Methode spplot. Maskieren Sie in der Abbildung der Vorhersagewerte die in d) ausgeschlossenen Pixel. Beschriften Sie vernünftig und verändern Sie die Farbskalen beider Graphiken, sodass ein gefälliger Druck in schwarz/weiß möglich ist. (3 Punkte)
@@ -134,17 +120,21 @@ mycolor <- colorRampPalette(brewer.pal(n=9, name = "Greys"))(20)
 
 #
 #Rinterpol_Ca <- rasterize(SPDFljz, NoData, interpol_Ca,  mask = TRUE)
-#Rinterpol_Ca <- mask(NoData, interpol_Ca)
+RNoData <- raster(NoData)
+Rinterpol_Ca <- raster(interpol_Ca)
+mRinterpol_Ca <- mask(Rinterpol_Ca, RNoData)#, updatevalue = RNoData)
+plot(mRinterpol_Ca)
+mRinterpol_Ca
 #Darstellung
 library(lattice)
 mylayout <- list(col.pixels = mycolor)
-spplot(interpol_Ca, "var1.pred",
+spplot(mRinterpol_Ca, "var1.pred",
        main = "Vorhergesagte Ca-Ionenkonzentration",
        col.regions=mycolor)
 
-spplot(interpol_Ca, "var1.var",
-       main = "(Co)varianzen der Ca-Ionenkonzentration",
-       col.regions=mycolor)
+##spplot(mRinterpol_Ca, "var1.var",
+  #     main = "(Co)varianzen der Ca-Ionenkonzentration",
+   #    col.regions=mycolor)
 
 ```
 
@@ -152,4 +142,4 @@ f) Interpretieren Sie kurz und knapp ihren Kriging-Varianz-Plot. Wieso ist
 die Kriging-Varianz als internes Gütemaß der Interpolation nur bedingt aussagekräftig?
 (1 Punkt)
 
-Die Aussagekraft hängt stark von der Pixelgröße und der Beprobungsdichte ab. Je dichter beprobt wurde, desto kleiner kann die Pixelgröße gewählt werden und desto genauer wird die Interpolation. Da es aber meist mehr Einflussfaktoren für einen bestimmten Messwert (hier die Konzentration von austauschbaren Ca-Ionen) als die räumliche Nähe gibt, ist die Interpolation nur auf Basis der Distanz nur eine Annäherung bzw. grobe Schätzung. In diesem Beispiel hat bereits das Variogramm gezeigt, dass nur Orte, die sehr nah beieinander liegen, ähnliche Werte/eine geringe Varianz der Werte aufweisen. Deshalb ist die Interpolation allein nicht aussagekräftig genug.
+Die Aussagekraft hängt stark von der Pixelgröße und der Beprobungsdichte ab. Je dichter beprobt wurde, desto kleiner kann die Pixelgröße gewählt werden und desto genauer wird die Interpolation. Da es aber meist mehr Einflussfaktoren für einen bestimmten Messwert (hier die Konzentration von austauschbaren Ca-Ionen) als die räumliche Nähe gibt, ist die Interpolation nur auf Basis der Distanz nur eine Annäherung bzw. grobe Schätzung. In diesem Beispiel hat bereits das Variogramm gezeigt, dass nur Orte, die sehr nah beieinander liegen, ähnliche Werte/eine geringe Varianz der Werte aufweisen. In der Abbildung der (Co)varianzen ist zu erkennen, dass je weiter das jeweilige Pixel von einem tatsächlich beprobten Standort entfernt ist, die Varianz stark schwankt und damit die Aussage über einen Wert für die austauschbaren Ca-Ionen sehr unsicher zu bewerten ist. Deshalb ist die Interpolation allein nicht aussagekräftig genug.
