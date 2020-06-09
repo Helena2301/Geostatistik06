@@ -100,7 +100,7 @@ interpol_Ca <- gstat::krige(Ca ~ 1,
 
 c) Welche zwei Daten-Attribute produziert die krige-Funktion und wofür stehen sie? (1 Punkt)
 
-Die krige-Funktion produziert zum einen var1.pred und zum anderen var1.var. var1.pred beinhaltet die Beschreibung der vorhergesagten Werte für die austauschbaren Ca-Ionen. var1.var beinhaltet die die (Co)varianzen für die berechneten Werte.
+Die krige-Funktion produziert zum einen var1.pred und zum anderen var1.var. var1.pred beinhaltet die vorhergesagten Werte für die austauschbaren Ca-Ionen. var1.var beinhaltet die die Varianzen für die berechneten Werte.
 
 d) Ermitteln Sie diejenigen Pixel in dem Vorhersagegrid der Zielgröße, für die die errechnete Kriging-Varianz den Wert der Gesamt-Varianz der Zielgröße überschreitet und definieren Sie diese als NoData. (1 Punkt)
 ```{r Aufgabe 13d}
@@ -139,4 +139,4 @@ f) Interpretieren Sie kurz und knapp ihren Kriging-Varianz-Plot. Wieso ist
 die Kriging-Varianz als internes Gütemaß der Interpolation nur bedingt aussagekräftig?
 (1 Punkt)
 
-Die Aussagekraft hängt stark von der Pixelgröße und der Beprobungsdichte ab. Je dichter beprobt wurde, desto kleiner kann die Pixelgröße gewählt werden und desto genauer wird die Interpolation. Da es aber meist mehr Einflussfaktoren für einen bestimmten Messwert (hier die Konzentration von austauschbaren Ca-Ionen) als die räumliche Nähe gibt, ist die Interpolation nur auf Basis der Distanz nur eine Annäherung bzw. grobe Schätzung. In diesem Beispiel hat bereits das Variogramm gezeigt, dass nur Orte, die sehr nah beieinander liegen, ähnliche Werte/eine geringe Varianz der Werte aufweisen. In der Abbildung der (Co)varianzen ist zu erkennen, dass je weiter das jeweilige Pixel von einem tatsächlich beprobten Standort entfernt ist, die Varianz stark schwankt und damit die Aussage über einen Wert für die austauschbaren Ca-Ionen sehr unsicher zu bewerten ist. Deshalb ist die Interpolation allein nicht aussagekräftig genug.
+Die Aussagekraft hängt stark von der Pixelgröße und der Beprobungsdichte ab. Je dichter beprobt wurde, desto kleiner kann die Pixelgröße gewählt werden und desto genauer wird die Interpolation. Da es aber meist mehr Einflussfaktoren für einen bestimmten Messwert (hier die Konzentration von austauschbaren Ca-Ionen) als die räumliche Nähe gibt, ist die Interpolation auf Basis der Distanz nur eine Annäherung bzw. eine grobe Schätzung. In diesem Beispiel hat bereits das Variogramm gezeigt, dass nur Orte, die sehr nah beieinander liegen, ähnliche Werte/eine geringe Varianz der Werte aufweisen. Die Abbildung der Varianzen zeigt, dass Pixel höherer Entfernung zum tatsächlich beprobten Standort eine höhere Varianz aufweisen. Damit ist die Aussage über einen Wert für die austauschbaren Ca-Ionen als "sehr unsicher" zu bewerten und eine Interpolation allein nicht aussagekräftig genug.
