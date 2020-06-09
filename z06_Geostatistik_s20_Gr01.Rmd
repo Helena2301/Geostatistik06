@@ -80,9 +80,9 @@ library(rgdal)
 sqrt(10500000/335) * 0.0791
 
 #Spatial Grid
-GT <- GridTopology(cellcentre.offset = c(490261, 3121075),
+GT <- GridTopology(cellcentre.offset = c(bb[1,1], bb[2,1]),
              cellsize = c(14, 14),
-             cells.dim = c(250, 340))
+             cells.dim = c(250, 340)) #Ergibt sich gerundet aus Maße der bbox durch 14
 
 targetSPG <- SpatialGrid(grid = GT,
                          proj4string = coordRefSys)
