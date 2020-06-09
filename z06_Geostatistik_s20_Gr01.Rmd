@@ -79,6 +79,10 @@ library(rgdal)
 #Pixelsize nach Hengl 2006
 sqrt(10500000/335) * 0.0791
 
+#Werte cell.dim
+(bb[1,2] - bb[1,1])/14
+(bb[2,2] - bb[2,1])/14
+
 #Spatial Grid
 GT <- GridTopology(cellcentre.offset = c(bb[1,1], bb[2,1]),
              cellsize = c(14, 14),
