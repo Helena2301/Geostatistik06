@@ -118,37 +118,21 @@ Hinweis: Mit Hilfe des Befehls ??Palettes erfragen Sie diverse Methoden verschie
 library(RColorBrewer)
 mycolor <- colorRampPalette(brewer.pal(n=9, name = "Greys"))(20)
 
-#RNoData <- raster(NoData)
-#Rinterpol_Ca <- raster(interpol_Ca)
+RNoData <- raster(NoData)
+Rinterpol_Ca <- raster(interpol_Ca)
 
-#mRinterpol_Ca <- mask(Rinterpol_Ca, RNoData)
-#plot(mRinterpol_Ca)
-#mRinterpol_Ca
-#mRinterpol_Ca@data@names <- RNoData@data@names
-#mRinterpol_Ca
+mRinterpol_Ca <- mask(Rinterpol_Ca, RNoData)
 
+#Darstellung
 library(lattice)
 mylayout <- list(col.pixels = mycolor)
-spplot(NoData, "var1.pred",
+spplot(mRinterpol_Ca, "var1.pred",
        main = "Vorhergesagte Ca-Ionenkonzentration",
        col.regions=mycolor)
 
-spplot(NoData, "var1.var",
+spplot(interpol_Ca, "var1.var",
        main = "(Co)varianzen der Ca-Ionenkonzentration",
        col.regions=mycolor)
-
-
-#Darstellung
-
-
-#spplot(mRinterpol_Ca, "var1.pred",
-#       main = "Vorhergesagte Ca-Ionenkonzentration",
-#       col.regions=mycolor)
-
-#spplot(mRinterpol_Ca, "var1.var",
-#       main = "(Co)varianzen der Ca-Ionenkonzentration",
-#       col.regions=mycolor)
-
 ```
 
 f) Interpretieren Sie kurz und knapp ihren Kriging-Varianz-Plot. Wieso ist
