@@ -94,7 +94,7 @@ b) Wenden Sie die Methode krige entsprechend des Ordinary Kriging an und interpo
 interpol_Ca <- gstat::krige(Ca ~ 1, 
                             SPDFljz, targetSPG, 
                             model = vario_omni_Ca_fit)
-summary(interpol_Ca)
+#summary(interpol_Ca)
 #plot(raster(interpol_Ca))
 ```
 
@@ -109,7 +109,7 @@ var(Ca)
 
 NoData <- interpol_Ca
 NoData[NoData$var1.var > 123.85] <- NA
-NoData
+#NoData
 ```
 
 e) Plotten Sie sowohl die vorhergesagten Ca-Ionenkonzentrationen als auch die zugehörigen Kriging-Varianzen mit Hilfe der Methode spplot. Maskieren Sie in der Abbildung der Vorhersagewerte die in d) ausgeschlossenen Pixel. Beschriften Sie vernünftig und verändern Sie die Farbskalen beider Graphiken, sodass ein gefälliger Druck in schwarz/weiß möglich ist. (3 Punkte)
@@ -118,23 +118,36 @@ Hinweis: Mit Hilfe des Befehls ??Palettes erfragen Sie diverse Methoden verschie
 library(RColorBrewer)
 mycolor <- colorRampPalette(brewer.pal(n=9, name = "Greys"))(20)
 
-#
-#Rinterpol_Ca <- rasterize(SPDFljz, NoData, interpol_Ca,  mask = TRUE)
-RNoData <- raster(NoData)
-Rinterpol_Ca <- raster(interpol_Ca)
-mRinterpol_Ca <- mask(Rinterpol_Ca, RNoData)#, updatevalue = RNoData)
-plot(mRinterpol_Ca)
-mRinterpol_Ca
-#Darstellung
+#RNoData <- raster(NoData)
+#Rinterpol_Ca <- raster(interpol_Ca)
+
+#mRinterpol_Ca <- mask(Rinterpol_Ca, RNoData)
+#plot(mRinterpol_Ca)
+#mRinterpol_Ca
+#mRinterpol_Ca@data@names <- RNoData@data@names
+#mRinterpol_Ca
+
 library(lattice)
 mylayout <- list(col.pixels = mycolor)
-spplot(mRinterpol_Ca, "var1.pred",
+spplot(NoData, "var1.pred",
        main = "Vorhergesagte Ca-Ionenkonzentration",
        col.regions=mycolor)
 
-##spplot(mRinterpol_Ca, "var1.var",
-  #     main = "(Co)varianzen der Ca-Ionenkonzentration",
-   #    col.regions=mycolor)
+spplot(NoData, "var1.var",
+       main = "(Co)varianzen der Ca-Ionenkonzentration",
+       col.regions=mycolor)
+
+
+#Darstellung
+
+
+#spplot(mRinterpol_Ca, "var1.pred",
+#       main = "Vorhergesagte Ca-Ionenkonzentration",
+#       col.regions=mycolor)
+
+#spplot(mRinterpol_Ca, "var1.var",
+#       main = "(Co)varianzen der Ca-Ionenkonzentration",
+#       col.regions=mycolor)
 
 ```
 
